@@ -57,5 +57,8 @@
       "@lavamoat/preinstall-always-fail": false,
       "sharp": true
     }
+  },
+  "resolutions": {
+    "@metamask/snaps-utils": "patch:@metamask/snaps-utils@npm:5.1.0#.yarn/patches/@metamask-snaps-utils-npm-5.1.0-d5e67ad792.patch"
   }
 }

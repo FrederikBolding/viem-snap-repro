@@ -1,0 +1,84 @@
+diff --git a/dist/cjs/eval-worker.js b/dist/cjs/eval-worker.js
+index d9ae1e50ed0d7ae4012352ce82134a1c3ec0dc0f..5595ca95d72b1c1fc5f38eb32d27164b88d2dca3 100644
+--- a/dist/cjs/eval-worker.js
++++ b/dist/cjs/eval-worker.js
+@@ -18,29 +18,20 @@ lockdown({
+     // Node.js domains are deprecated.
+     domainTaming: 'unsafe'
+ });
+-/**
+- * Get mock endowments that don't do anything. This is useful for running the
+- * eval, for snaps that try to communicate with the extension on initialisation,
+- * for example.
+- *
+- * @returns The mock endowments.
+- */ function getMockEndowments() {
+-    const endowments = (0, _mock.generateMockEndowments)();
+-    return {
+-        ...endowments,
+-        window: endowments,
+-        self: endowments
+-    };
+-}
+ const snapFilePath = process.argv[2];
+ const snapModule = {
+     exports: {}
+ };
+-new Compartment({
+-    ...getMockEndowments(),
++const compartment = new Compartment({
++    ...(0, _mock.generateMockEndowments)(),
+     module: snapModule,
+     exports: snapModule.exports
+-}).evaluate((0, _fs.readFileSync)(snapFilePath, 'utf8'));
++});
++// Mirror BaseSnapExecutor
++compartment.globalThis.self = compartment.globalThis;
++compartment.globalThis.global = compartment.globalThis;
++compartment.globalThis.window = compartment.globalThis;
++compartment.evaluate((0, _fs.readFileSync)(snapFilePath, 'utf8'));
+ const invalidExports = Object.keys(snapModule.exports).filter((snapExport)=>!_handlertypes.SNAP_EXPORT_NAMES.includes(snapExport));
+ if (invalidExports.length > 0) {
+     // eslint-disable-next-line no-console
+diff --git a/dist/esm/eval-worker.js b/dist/esm/eval-worker.js
+index cc134e1a94e586a11f8186953d9a4f5f06543241..02e2f619869be23d534a0d26442f614c3d80f861 100644
+--- a/dist/esm/eval-worker.js
++++ b/dist/esm/eval-worker.js
+@@ -14,29 +14,20 @@ lockdown({
+     // Node.js domains are deprecated.
+     domainTaming: 'unsafe'
+ });
+-/**
+- * Get mock endowments that don't do anything. This is useful for running the
+- * eval, for snaps that try to communicate with the extension on initialisation,
+- * for example.
+- *
+- * @returns The mock endowments.
+- */ function getMockEndowments() {
+-    const endowments = generateMockEndowments();
+-    return {
+-        ...endowments,
+-        window: endowments,
+-        self: endowments
+-    };
+-}
+ const snapFilePath = process.argv[2];
+ const snapModule = {
+     exports: {}
+ };
+-new Compartment({
+-    ...getMockEndowments(),
++const compartment = new Compartment({
++    ...generateMockEndowments(),
+     module: snapModule,
+     exports: snapModule.exports
+-}).evaluate(readFileSync(snapFilePath, 'utf8'));
++});
++// Mirror BaseSnapExecutor
++compartment.globalThis.self = compartment.globalThis;
++compartment.globalThis.global = compartment.globalThis;
++compartment.globalThis.window = compartment.globalThis;
++compartment.evaluate(readFileSync(snapFilePath, 'utf8'));
+ const invalidExports = Object.keys(snapModule.exports).filter((snapExport)=>!SNAP_EXPORT_NAMES.includes(snapExport));
+ if (invalidExports.length > 0) {
+     // eslint-disable-next-line no-console
